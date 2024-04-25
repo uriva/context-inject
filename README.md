@@ -2,8 +2,16 @@
 
 Allows injecting values from a parent scope into child scopes in async context.
 
+node:
+
 ```
 npm i async-context
+```
+
+deno:
+
+```
+import {context} from "https://deno.land/x/async_context/src/index.ts";
 ```
 
 ## example
