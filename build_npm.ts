@@ -9,16 +9,16 @@ await build({
   outDir,
   shims: { deno: true },
   package: {
-    name: "async-inject",
+    name: "context-inject",
     version: Deno.args[0],
     description:
       "Inject values and access them from nested scopes in async context.",
     license: "MIT",
     repository: {
       type: "git",
-      url: "git+https://github.com/uriva/async-inject.git",
+      url: "git+https://github.com/uriva/context-inject.git",
     },
-    bugs: { url: "https://github.com/uriva/async-inject/issues" },
+    bugs: { url: "https://github.com/uriva/context-inject/issues" },
   },
   importMap: "deno.json",
   postBuild() {

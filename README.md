@@ -1,6 +1,4 @@
-# async-context
-
-Allows injecting values from a parent scope into child scopes in async context.
+Inject values from a parent scope into child scopes in async context.
 
 node:
 
