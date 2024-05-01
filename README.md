@@ -11,7 +11,7 @@ npm i async-context
 deno:
 
 ```
-import {context} from "https://deno.land/x/async_context/src/index.ts";
+import { context } from "https://deno.land/x/async_context/src/index.ts";
 ```
 
 ## example
