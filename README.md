@@ -10,7 +10,7 @@ npm i async-context
 
 deno:
 
-```
+```ts
 import { context } from "https://deno.land/x/async_context/src/index.ts";
 ```
 
