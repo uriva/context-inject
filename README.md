@@ -42,24 +42,30 @@ const { inject, access } = context((): DataBase => {
     throw new Error("not injected!");
 });
 
-const injectDb = () => {
-    const myDb = await initDb();
-    return inject(() => myDb);
-};
-
 const g = () => {
-    // arbitrarily complex code...
-    // suddenly you need to access the db
+    // Arbitrarily complex deep nested code...
+    // Suddenly you need to access the db. Great!
     const dbInstance = access();
-    // do something with it...
+    // Do something with it...
 };
 
 const f = () => {
-    // arbitrarily complex code...
+    // Arbitrarily complex deep nested code...
     return g();
 };
 
-await f(); // throws an error
+// In production
 
-await injectDb(f)();
+const myDb = await initDb();
+const fWithDbAccess = inject(() => myDb)(f);
+await fWithDbAccess();
+
+// In your test
+
+const myDb = await mockDbForTesting();
+const fWithMockDb = inject(() => myDb)(f);
+await fWithMockDb();
+
+// If you forget to inject, it will fail clearly by throwing an error.
+await f();
 ```
