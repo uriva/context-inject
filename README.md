@@ -44,7 +44,9 @@ import { context } from "https://deno.land/x/context_inject/src/index.ts";
 ## example
 
 ```ts
-const { inject, access } = context((): DataBase => {
+type MyDatabase = {}; // Some object.
+
+const { inject, access } = context((): MyDatabase => {
   throw new Error("not injected!");
 });
 
@@ -62,16 +64,16 @@ const f = () => {
 
 // In production
 
-const myDb = await initDb();
+const myDb: MyDatabase = await initDb();
 const fWithDbAccess = inject(() => myDb)(f);
 await fWithDbAccess();
 
 // In your test
 
-const myDb = await mockDbForTesting();
+const myDb: MyDatabase = await mockDbForTesting();
 const fWithMockDb = inject(() => myDb)(f);
 await fWithMockDb();
 
-// If you forget to inject, it will fail clearly by throwing an error.
-await f();
+// If you forget to inject, you will get an explicit exception.
+await f(); // throws new Error("not injected!")
 ```
