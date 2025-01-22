@@ -11,10 +11,10 @@ is needed later on.
 
 The common way to handle this is either by passing the value down the call
 stack - a safe and readable approach but not too ergonomic, as it results in
-signature duplication (i.e. the same parameters are written along the call
-stack), or a global variable is set - which is unsafe, hard to test (because you
-can't mock it for testing) and limits your ability to use the same code in
-different contexts.
+signature duplication (i.e. the same parameters are written again and again
+along the call stack), or using a global variable is set - which is unsafe, hard
+to test (because you can't mock it for testing) and limits your ability to use
+the same code in different contexts.
 
 This library solves this problem if you're working in an async context. By
 leveraging the NodeJS `async_hooks` API, it lets you wrap any async function
