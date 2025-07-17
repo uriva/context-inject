@@ -8,7 +8,7 @@ type MakeAsync<F extends Func> = F extends AsyncFunction ? F
   : (...args: Parameters<F>) => Promise<ReturnType<F>>;
 
 const withContext = <T>(storage: AsyncLocalStorage<T>, context: T) =>
-<F extends Func>(f: F): F =>
+<F extends Func>(f: F): F extends AsyncFunction ? F : MakeAsync<F> =>
 // @ts-expect-error cannot infer
 (...xs) =>
   new Promise((resolve, reject) =>
@@ -26,8 +26,6 @@ export const context = <F extends Func>(fallbackFn: F) => {
     // Cannot be made point free because has to call `storage.getStore` contextually.
     access:
       ((...xs: Parameters<F>) =>
-        (storage.getStore() ?? fallbackFn)(...xs)) as F extends AsyncFunction
-          ? F
-          : MakeAsync<F>,
+        (storage.getStore() ?? fallbackFn)(...xs)) as F,
   });
 };
