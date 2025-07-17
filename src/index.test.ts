@@ -9,6 +9,14 @@ Deno.test("inject and access", async () => {
   assertEquals(await f(), "nothing injected");
 });
 
+Deno.test("inject and access non async", async () => {
+  const { inject, access } = context((): string => "nothing injected");
+  const f = () => access();
+  assertEquals(await f(), "nothing injected");
+  const withString = inject(() => "injected");
+  assertEquals(await withString(f)(), "injected");
+});
+
 Deno.test("override", async () => {
   const { inject, access } = context((): string => "nothing injected");
   const withStringX = inject(() => "X");
