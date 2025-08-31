@@ -12,7 +12,7 @@ Deno.test("inject and access", async () => {
 Deno.test("inject and access non async", async () => {
   const { inject, access } = context((): string => "nothing injected");
   const f = () => access();
-  assertEquals(await f(), "nothing injected");
+  assertEquals(f(), "nothing injected");
   const withString = inject(() => "injected");
   assertEquals(await withString(f)(), "injected");
 });
