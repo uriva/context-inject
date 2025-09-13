@@ -19,7 +19,7 @@ const withContext = <T>(storage: AsyncLocalStorage<T>, context: T) =>
     })
   );
 
-export const context = <F extends Func>(fallbackFn: F) => {
+export const context = <F extends Func>(fallbackFn: F): Injection<F> => {
   const storage = new AsyncLocalStorage<F>();
   return ({
     inject: (fn: F) => withContext(storage, fn),
@@ -28,4 +28,13 @@ export const context = <F extends Func>(fallbackFn: F) => {
       ((...xs: Parameters<F>) =>
         (storage.getStore() ?? fallbackFn)(...xs)) as F,
   });
+};
+
+export type Injector = <F extends Func>(
+  f: F,
+) => F extends AsyncFunction ? F : MakeAsync<F>;
+
+export type Injection<T extends Func> = {
+  inject: (fn: T) => Injector;
+  access: T;
 };
