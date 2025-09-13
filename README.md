@@ -29,7 +29,7 @@ passed down a specific stack.
 
 ## Installation
 
-`jsr:@uri/context-inject`
+`jsr:@uri/inject`
 
 ## example
 
