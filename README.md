@@ -29,17 +29,7 @@ passed down a specific stack.
 
 ## Installation
 
-node:
-
-```
-npm i async-context
-```
-
-deno:
-
-```ts
-import { context } from "https://deno.land/x/context_inject/src/index.ts";
-```
+`jsr:@uri/context-inject`
 
 ## example
 
