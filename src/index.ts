@@ -27,6 +27,7 @@ export const context = <F extends Func>(fallbackFn: F): Injection<F> => {
     access:
       ((...xs: Parameters<F>) =>
         (storage.getStore() ?? fallbackFn)(...xs)) as F,
+    getStore: () => storage.getStore() ?? fallbackFn,
   });
 };
 
@@ -37,4 +38,5 @@ export type Injector = <F extends Func>(
 export type Injection<T extends Func> = {
   inject: (fn: T) => Injector;
   access: T;
+  getStore: () => T;
 };
