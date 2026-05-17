@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { context } from "./index.ts";
 
 Deno.test("inject and access", async () => {
@@ -41,4 +41,58 @@ Deno.test("use context within context", async () => {
   assertEquals(await withA(f)(), "nothing injected B");
   assertEquals(await withA(withAB(f))(), "AB");
   assertEquals(await f(), "nothing injected B");
+});
+
+Deno.test("async rejection preserves caller stack through composition", async () => {
+  const { inject } = context((): string => "fallback");
+  const withValue = inject(() => "injected");
+
+  const innerThrower = async () => {
+    throw new Error("boom");
+  };
+
+  const composed = (x: string) =>
+    Promise.resolve(x).then(innerThrower);
+
+  const outerCaller = async () => {
+    const wrapped = withValue(composed);
+    return await wrapped("go");
+  };
+
+  try {
+    await outerCaller();
+    assert(false, "should have thrown");
+  } catch (e) {
+    const stack = (e as Error).stack ?? "";
+    assert(
+      stack.includes("outerCaller"),
+      `stack should include outerCaller, got:\n${stack}`,
+    );
+  }
+});
+
+Deno.test("sync throw inside async callback preserves caller stack", async () => {
+  const { inject } = context((): string => "fallback");
+  const withValue = inject(() => "injected");
+
+  const inner = async () => {
+    await Promise.resolve(1);
+    throw new Error("sync-inside-async");
+  };
+
+  const outerCaller = async () => {
+    const wrapped = withValue(inner);
+    return await wrapped();
+  };
+
+  try {
+    await outerCaller();
+    assert(false, "should have thrown");
+  } catch (e) {
+    const stack = (e as Error).stack ?? "";
+    assert(
+      stack.includes("outerCaller"),
+      `stack should include outerCaller, got:\n${stack}`,
+    );
+  }
 });
