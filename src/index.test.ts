@@ -1,5 +1,9 @@
-import { assert, assertEquals } from "@std/assert";
-import { context } from "./index.ts";
+import { assert, assertEquals, assertRejects } from "@std/assert";
+import {
+  context,
+  createContextWithStorage,
+  createFallbackStorage,
+} from "./index.ts";
 
 Deno.test("inject and access", async () => {
   const { inject, access } = context((): string => "nothing injected");
@@ -47,12 +51,9 @@ Deno.test("async rejection preserves caller stack through composition", async ()
   const { inject } = context((): string => "fallback");
   const withValue = inject(() => "injected");
 
-  const innerThrower = async () => {
-    throw new Error("boom");
-  };
+  const innerThrower = () => Promise.reject(new Error("boom"));
 
-  const composed = (x: string) =>
-    Promise.resolve(x).then(innerThrower);
+  const composed = (x: string) => Promise.resolve(x).then(innerThrower);
 
   const outerCaller = async () => {
     const wrapped = withValue(composed);
@@ -95,4 +96,51 @@ Deno.test("sync throw inside async callback preserves caller stack", async () =>
       `stack should include outerCaller, got:\n${stack}`,
     );
   }
+});
+
+Deno.test("native storage isolates concurrent async branches", async () => {
+  const { inject, access } = context((): string => "default");
+  const branch = (val: string, delayMs: number) =>
+    inject(() => val)(async () => {
+      await new Promise((r) => setTimeout(r, delayMs));
+      return access();
+    })();
+  const [a, b] = await Promise.all([branch("first", 20), branch("second", 5)]);
+  assertEquals(a, "first");
+  assertEquals(b, "second");
+  assertEquals(access(), "default");
+});
+
+Deno.test("browser fallback storage handles sync, async, nested overrides, and errors", async () => {
+  const { inject, access, getStore } = createContextWithStorage(
+    createFallbackStorage<() => string>(),
+    (): string => "fallback",
+  );
+  assertEquals(access(), "fallback");
+  assertEquals(getStore()(), "fallback");
+
+  const withOuter = inject(() => "outer");
+  const withInner = inject(() => "inner");
+
+  const nestedResult = await withOuter(async () => {
+    const before = access();
+    await Promise.resolve();
+    const inside = await withInner(async () => {
+      await Promise.resolve();
+      return access();
+    })();
+    const after = access();
+    return [before, inside, after];
+  })();
+
+  assertEquals(nestedResult, ["outer", "inner", "outer"]);
+  assertEquals(access(), "fallback");
+
+  await assertRejects(() =>
+    withOuter(async () => {
+      await Promise.resolve();
+      throw new Error("boom");
+    })()
+  );
+  assertEquals(access(), "fallback");
 });
